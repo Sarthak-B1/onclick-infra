@@ -264,9 +264,12 @@ pipeline {
     // ══════════════════════════════════════════════════════════════════════
     post {
         always {
-            echo "🧹 Cleaning up workspace..."
-            sh 'rm -f tfplan.out tf-outputs.json || true'
-            cleanWs()
+            // node block required for sh and cleanWs to have FilePath context
+            node('built-in') {
+                echo "🧹 Cleaning up workspace..."
+                sh 'rm -f tfplan.out tf-outputs.json || true'
+                cleanWs()
+            }
         }
 
         success {
