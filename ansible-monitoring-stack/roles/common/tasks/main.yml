@@ -4,7 +4,6 @@
     name:
       - wget
       - unzip
-      - curl
       - ca-certificates
       - gzip
       - tar
@@ -17,7 +16,6 @@
     name:
       - wget
       - unzip
-      - curl
       - ca-certificates
       - gzip
       - tar
