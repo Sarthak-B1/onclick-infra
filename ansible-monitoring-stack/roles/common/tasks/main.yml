@@ -21,3 +21,35 @@
       - tar
     state: present
   when: ansible_facts['os_family'] == "RedHat"
+
+- name: Create 1GB swap file to prevent OOM on small instances
+  ansible.builtin.command:
+    cmd: dd if=/dev/zero of=/swapfile bs=1M count=1024
+    creates: /swapfile
+
+- name: Set correct permissions on swap file
+  ansible.builtin.file:
+    path: /swapfile
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Format swap file
+  ansible.builtin.command:
+    cmd: mkswap /swapfile
+  when: ansible_facts['ansible_swapfree_mb'] == 0
+
+- name: Enable swap
+  ansible.builtin.command:
+    cmd: swapon /swapfile
+  when: ansible_facts['ansible_swapfree_mb'] == 0
+
+- name: Persist swap file in /etc/fstab
+  ansible.posix.mount:
+    name: none
+    src: /swapfile
+    fstype: swap
+    opts: sw
+    passno: '0'
+    dump: '0'
+    state: present
