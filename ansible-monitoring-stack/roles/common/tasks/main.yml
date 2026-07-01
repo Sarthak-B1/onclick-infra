@@ -40,12 +40,7 @@
     cmd: mkswap /swapfile
   when: swap_file.changed
 
-- name: Enable swap
-  ansible.builtin.command:
-    cmd: swapon /swapfile
-  when: swap_file.changed
-
-- name: Persist swap file in /etc/fstab
+- name: Enable and persist swap file in /etc/fstab
   ansible.posix.mount:
     name: none
     src: /swapfile
@@ -53,4 +48,4 @@
     opts: sw
     passno: '0'
     dump: '0'
-    state: present
+    state: mounted
