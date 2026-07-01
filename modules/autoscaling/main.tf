@@ -56,9 +56,16 @@ resource "aws_autoscaling_group" "grafana_asg" {
   protect_from_scale_in     = false
 
   launch_template {
-
     id      = aws_launch_template.grafana_lt.id
-    version = "$Latest"
+    version = aws_launch_template.grafana_lt.latest_version
+  }
+
+  instance_refresh {
+    strategy = "Rolling"
+    preferences {
+      min_healthy_percentage = 50
+    }
+    triggers = ["tag"]
   }
 
   tag {
