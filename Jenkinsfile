@@ -43,7 +43,7 @@ pipeline {
     parameters {
         choice(
             name: 'ACTION',
-            choices: ['apply', 'plan', 'destroy'],
+            choices: ['apply', 'plan'],
             description: 'Terraform action to perform'
         )
         choice(
@@ -253,23 +253,6 @@ pipeline {
                             --ssh-extra-args="-o IdentitiesOnly=yes -o IdentityFile=${SSH_KEY_FILE}" \
                             --diff \
                             -v
-                    '''
-                }
-            }
-        }
-
-        // ── 11. Terraform Destroy ─────────────────────────────────────────
-        stage('Terraform Destroy') {
-            when {
-                expression { params.ACTION == 'destroy' }
-            }
-            steps {
-                dir("${TF_DIR}") {
-                    sh '''
-                        echo "💣 Destroying Terraform managed infrastructure..."
-                        terraform destroy \
-                            -input=false \
-                            -auto-approve
                     '''
                 }
             }
