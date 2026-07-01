@@ -39,7 +39,7 @@ pipeline {
     parameters {
         choice(
             name: 'ACTION',
-            choices: ['plan', 'apply', 'destroy'],
+            choices: ['plan', 'apply'],
             description: 'Terraform action to perform'
         )
         choice(
@@ -230,10 +230,15 @@ pipeline {
                     sh '''
                         echo "🤖 Starting Ansible provisioning..."
                         chmod 600 "${SSH_KEY_FILE}"
+
+                        # Force SSH to use ONLY the Jenkins credential key
                         export ANSIBLE_HOST_KEY_CHECKING=False
+                        export ANSIBLE_PRIVATE_KEY_FILE="${SSH_KEY_FILE}"
+
                         ansible-playbook play.yml \
                             --private-key="${SSH_KEY_FILE}" \
                             --inventory=inventory/ \
+                            --ssh-extra-args="-o IdentitiesOnly=yes -o IdentityFile=${SSH_KEY_FILE}" \
                             --diff \
                             -v
                     '''
@@ -241,25 +246,7 @@ pipeline {
             }
         }
 
-        // ── 11. Terraform Destroy ─────────────────────────────────────────
-        stage('Terraform Destroy') {
-            when {
-                expression { params.ACTION == 'destroy' }
-            }
-            steps {
-                dir("${TF_DIR}") {
-                    sh '''
-                        echo "💣 Destroying infrastructure..."
-                        terraform destroy \
-                            -var="aws_region=${AWS_DEFAULT_REGION}" \
-                            -var="instance_type=${INSTANCE_TYPE}" \
-                            -var="key_name=sarthak" \
-                            -input=false \
-                            -auto-approve
-                    '''
-                }
-            }
-        }
+        // ── Terraform Destroy stage removed (not needed) ──────────────────
     }
 
     // ══════════════════════════════════════════════════════════════════════
