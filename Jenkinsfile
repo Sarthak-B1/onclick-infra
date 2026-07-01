@@ -200,10 +200,11 @@ pipeline {
             steps {
                 dir("${TF_DIR}") {
                     sh '''
-                        echo "🏗️  Applying Terraform plan (HACK: Actually Destroying)..."
-                        terraform destroy \
+                        echo "🏗️  Applying Terraform plan..."
+                        terraform apply \
                             -input=false \
-                            -auto-approve
+                            -auto-approve \
+                            tfplan.out
                     '''
                 }
             }
@@ -233,7 +234,7 @@ pipeline {
             when {
                 allOf {
                     expression { params.ACTION == 'apply' }
-                    expression { false }
+                    expression { params.RUN_ANSIBLE }
                 }
             }
             steps {
