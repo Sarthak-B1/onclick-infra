@@ -43,7 +43,7 @@ pipeline {
     parameters {
         choice(
             name: 'ACTION',
-            choices: ['apply', 'plan'],
+            choices: ['apply', 'plan', 'destroy'],
             description: 'Terraform action to perform'
         )
         choice(
@@ -258,8 +258,24 @@ pipeline {
             }
         }
 
-        // ── Terraform Destroy stage removed (not needed) ──────────────────
-    }
+        // ── 11. Terraform Destroy ─────────────────────────────────────────
+        stage('Terraform Destroy') {
+            when {
+                expression { params.ACTION == 'destroy' }
+            }
+            steps {
+                dir("${TF_DIR}") {
+                    sh '''
+                        echo "💣 Destroying Terraform managed infrastructure..."
+                        terraform destroy \
+                            -input=false \
+                            -auto-approve
+                    '''
+                }
+            }
+        }
+
+    } // end of stages
 
     // ══════════════════════════════════════════════════════════════════════
     //  P O S T   A C T I O N S
