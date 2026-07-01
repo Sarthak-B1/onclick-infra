@@ -157,10 +157,11 @@ pipeline {
                             -var="instance_type=${INSTANCE_TYPE}" \
                             -var="key_name=sarthak" \
                             -out=tfplan.out \
-                            -input=false
+                            -input=false -no-color > tfplan.txt
+                        cat tfplan.txt
                     '''
                 }
-                archiveArtifacts artifacts: 'tfplan.out', allowEmptyArchive: false
+                archiveArtifacts artifacts: 'tfplan.out,tfplan.txt', allowEmptyArchive: false
             }
         }
 
@@ -174,11 +175,18 @@ pipeline {
             }
             steps {
                 script {
+                    def planOutput = "Plan output not found."
+                    if (fileExists("${TF_DIR}/tfplan.txt")) {
+                        planOutput = readFile("${TF_DIR}/tfplan.txt")
+                    }
                     def actionColor = params.ACTION == 'destroy' ? '⚠️  DESTROY' : '✅ APPLY'
                     input(
                         message: "${actionColor} – Are you sure you want to ${params.ACTION.toUpperCase()} the ${params.ENVIRONMENT} monitoring stack?",
                         ok: 'Proceed',
-                        submitter: 'admin,ops-team'
+                        submitter: 'admin,ops-team',
+                        parameters: [
+                            text(name: 'Terraform Plan', description: 'Review the plan before proceeding:', defaultValue: planOutput)
+                        ]
                     )
                 }
             }
