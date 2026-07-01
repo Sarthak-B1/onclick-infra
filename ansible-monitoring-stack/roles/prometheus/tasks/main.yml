@@ -40,12 +40,12 @@
 - name: Format Prometheus EBS volume if not formatted
   community.general.filesystem:
     fstype: ext4
-    dev: /dev/xvdf
+    dev: /dev/nvme1n1
 
 - name: Mount Prometheus EBS volume at data directory
   ansible.posix.mount:
     path: "{{ prometheus_data_dir }}"
-    src: /dev/xvdf
+    src: /dev/nvme1n1
     fstype: ext4
     state: mounted
 
