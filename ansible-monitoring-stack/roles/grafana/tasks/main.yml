@@ -53,6 +53,14 @@
     update_cache: true
   when: ansible_facts.os_family == "Debian"
 
+- name: Create local Grafana database directory to bypass EFS SQLite lock issues
+  ansible.builtin.file:
+    path: /var/lib/grafana-local-db
+    state: directory
+    owner: grafana
+    group: grafana
+    mode: "0750"
+
 - name: Configure Grafana
   ansible.builtin.template:
     src: grafana.ini.j2
