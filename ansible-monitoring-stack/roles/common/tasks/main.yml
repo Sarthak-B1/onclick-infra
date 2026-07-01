@@ -26,6 +26,7 @@
   ansible.builtin.command:
     cmd: dd if=/dev/zero of=/swapfile bs=1M count=1024
     creates: /swapfile
+  register: swap_file
 
 - name: Set correct permissions on swap file
   ansible.builtin.file:
@@ -37,12 +38,12 @@
 - name: Format swap file
   ansible.builtin.command:
     cmd: mkswap /swapfile
-  when: ansible_facts['ansible_swapfree_mb'] == 0
+  when: swap_file.changed
 
 - name: Enable swap
   ansible.builtin.command:
     cmd: swapon /swapfile
-  when: ansible_facts['ansible_swapfree_mb'] == 0
+  when: swap_file.changed
 
 - name: Persist swap file in /etc/fstab
   ansible.posix.mount:
