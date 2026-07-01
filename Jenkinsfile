@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    triggers {
+        githubPush()
+    }
+
     /*
      * ─────────────────────────────────────────────
      *  Terraform + Ansible – Monitoring Stack CI/CD
@@ -39,7 +43,7 @@ pipeline {
     parameters {
         choice(
             name: 'ACTION',
-            choices: ['plan', 'apply'],
+            choices: ['apply', 'plan'],
             description: 'Terraform action to perform'
         )
         choice(
@@ -59,7 +63,7 @@ pipeline {
         )
         booleanParam(
             name: 'AUTO_APPROVE',
-            defaultValue: false,
+            defaultValue: true,
             description: 'Auto-approve Terraform apply/destroy without manual confirmation?'
         )
     }
