@@ -14,4 +14,4 @@ keyed_groups:
   - key: tags.Role
     prefix: role
 groups:
-  monitoring_node_exporter: "tags.Role in ['prometheus-primary', 'prometheus-replica']"
+  monitoring_node_exporter: "tags.Role in ['prometheus-primary', 'prometheus-replica', 'grafana']"

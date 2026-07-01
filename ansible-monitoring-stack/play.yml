@@ -1,3 +1,12 @@
+- name: Wait for all hosts to be ready
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Wait for SSH to become available
+      ansible.builtin.wait_for_connection:
+        delay: 5
+        timeout: 300
+
 - name: Common setup for bastion hosts
   hosts: role_bastion
   become: true
