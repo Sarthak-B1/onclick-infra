@@ -11,6 +11,9 @@ pipeline {
 
     // ── Environment Variables ──────────────────────────────────────────────
     environment {
+        // PATH fix: Jenkins shell doesn't load ~/.zshrc so Homebrew tools not found
+        PATH               = "/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${env.PATH}"
+
         // AWS credentials stored as Jenkins secret text credentials
         AWS_ACCESS_KEY_ID     = credentials('aws-access-key-id')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
