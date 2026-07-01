@@ -6,6 +6,8 @@ filters:
     - Monitoring Infrastructure
   instance-state-name:
     - running
+  key-name:
+    - sarthak
 hostnames:
   - private-ip-address
 compose:
