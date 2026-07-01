@@ -7,3 +7,10 @@ admin_password = {{ grafana_admin_password }}
 
 [paths]
 data = /var/lib/grafana
+plugins = /var/lib/grafana/plugins
+provisioning = /var/lib/grafana/provisioning
+logs = /var/log/grafana
+
+[database]
+type = sqlite3
+path = grafana_new.db
