@@ -45,12 +45,10 @@ locals {
     #!/bin/bash
     exec > /var/log/python-install.log 2>&1
     set -ex
-    echo "=== Installing Python 3.8 ==="
+    echo "=== Installing Python 3.9 ==="
     yum makecache
-    amazon-linux-extras install -y python3.8
-    # Ansible 2.20 needs the python3 binary to be at least 3.8
-    ln -sf /usr/bin/python3.8 /usr/bin/python3
-    echo "=== Python 3.8 Install Complete ==="
+    yum install -y python3
+    echo "=== Python 3.9 Install Complete ==="
   USERDATA
 }
 
