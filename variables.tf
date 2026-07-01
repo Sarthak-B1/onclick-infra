@@ -160,7 +160,7 @@ variable "grafana_min_size" {
 variable "grafana_desired_capacity" {
   description = "Desired number of Grafana instances in the Auto Scaling Group."
   type        = number
-  default     = 2
+  default     = 1
 
   validation {
     condition     = var.grafana_desired_capacity >= 1
@@ -171,7 +171,7 @@ variable "grafana_desired_capacity" {
 variable "grafana_max_size" {
   description = "Maximum number of Grafana instances in the Auto Scaling Group."
   type        = number
-  default     = 4
+  default     = 1
 
   validation {
     condition     = var.grafana_max_size >= 1
