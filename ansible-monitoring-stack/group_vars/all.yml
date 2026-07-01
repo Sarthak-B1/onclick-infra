@@ -37,7 +37,7 @@ ansible_ssh_private_key_file: "{{ lookup('env', 'SSH_KEY_FILE') }}"
 ansible_python_interpreter: auto_silent
 ansible_ssh_common_args: >-
   {% if 'role_bastion' not in group_names %}
-  -o StrictHostKeyChecking=no -o ProxyCommand="ssh -W %h:%p -i {{ ansible_ssh_private_key_file }} -o StrictHostKeyChecking=no {{ ansible_user }}@{{ hostvars[groups['role_bastion'][0]]['ansible_host'] }}"
+  -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyCommand="ssh -W %h:%p -i {{ ansible_ssh_private_key_file }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {{ ansible_user }}@{{ hostvars[groups['role_bastion'][0]]['ansible_host'] }}"
   {% else %}
-  -o StrictHostKeyChecking=no
+  -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
   {% endif %}
