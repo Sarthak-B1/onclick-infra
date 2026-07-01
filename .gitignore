@@ -1,0 +1,19 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfplan
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.tfstate.lock.info
+
+# OS files
+.DS_Store
+
+# Ansible Virtual Environment
+ansible-monitoring-stack/.venv/
+ansible-monitoring-stack/.DS_Store
+*.pem
