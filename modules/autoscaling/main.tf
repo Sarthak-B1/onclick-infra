@@ -60,6 +60,8 @@ resource "aws_autoscaling_group" "grafana_asg" {
     version = aws_launch_template.grafana_lt.latest_version
   }
 
+  wait_for_capacity_timeout = "0"
+
   instance_refresh {
     strategy = "Rolling"
     preferences {
