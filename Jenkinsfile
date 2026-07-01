@@ -165,29 +165,29 @@ pipeline {
             }
         }
 
-        // ── 7. Approval Gate (Apply / Destroy only) ───────────────────────
+        // ── 7. Approval Gate (Apply only) ───────────────────────
         stage('Approval Gate') {
             when {
-                allOf {
-                    expression { params.ACTION in ['apply', 'destroy'] }
-                    expression { !params.AUTO_APPROVE }
-                }
+                expression { params.ACTION == 'apply' }
             }
             steps {
                 script {
-                    def planOutput = "Plan output not found."
-                    if (fileExists("${TF_DIR}/tfplan.txt")) {
-                        planOutput = readFile("${TF_DIR}/tfplan.txt")
+                    if (params.AUTO_APPROVE) {
+                        echo "✅ Auto-approve is enabled. Skipping manual approval..."
+                    } else {
+                        def planOutput = "Plan output not found."
+                        if (fileExists("${TF_DIR}/tfplan.txt")) {
+                            planOutput = readFile("${TF_DIR}/tfplan.txt")
+                        }
+                        input(
+                            message: "✅ APPLY – Are you sure you want to apply the ${params.ENVIRONMENT} monitoring stack?",
+                            ok: 'Proceed',
+                            submitter: 'admin,ops-team',
+                            parameters: [
+                                text(name: 'Terraform Plan', description: 'Review the plan before proceeding:', defaultValue: planOutput)
+                            ]
+                        )
                     }
-                    def actionColor = params.ACTION == 'destroy' ? '⚠️  DESTROY' : '✅ APPLY'
-                    input(
-                        message: "${actionColor} – Are you sure you want to ${params.ACTION.toUpperCase()} the ${params.ENVIRONMENT} monitoring stack?",
-                        ok: 'Proceed',
-                        submitter: 'admin,ops-team',
-                        parameters: [
-                            text(name: 'Terraform Plan', description: 'Review the plan before proceeding:', defaultValue: planOutput)
-                        ]
-                    )
                 }
             }
         }
