@@ -1,0 +1,8 @@
+---
+enable_firewall: true
+
+allowed_ports:
+  - { name: ssh, port: 22, proto: tcp }
+  - { name: grafana, port: 3000, proto: tcp }
+  - { name: prometheus, port: 9090, proto: tcp }
+  - { name: node_exporter, port: 9100, proto: tcp }

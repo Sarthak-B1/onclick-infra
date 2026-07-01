@@ -1,0 +1,43 @@
+- name: Common setup for bastion hosts
+  hosts: role_bastion
+  become: true
+  gather_facts: true
+  roles:
+    - common
+    - security
+
+- name: Common setup for all monitoring hosts
+  hosts: monitoring_node_exporter
+  become: true
+  gather_facts: true
+  roles:
+    - common
+    - security
+
+- name: Ensure Node Exporter on all monitoring hosts
+  hosts: monitoring_node_exporter
+  become: true
+  gather_facts: true
+  roles:
+    - node_exporter
+
+- name: Configure Prometheus servers
+  hosts: role_prometheus_primary:role_prometheus_replica
+  become: true
+  gather_facts: true
+  roles:
+    - prometheus
+
+- name: Configure EFS mounts for Grafana
+  hosts: role_grafana
+  become: true
+  gather_facts: true
+  roles:
+    - efs
+
+- name: Configure Grafana servers
+  hosts: role_grafana
+  become: true
+  gather_facts: true
+  roles:
+    - grafana
