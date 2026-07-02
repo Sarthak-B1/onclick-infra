@@ -53,3 +53,4 @@ variable "tags" {
 variable "key_name" {
   type = string
 }
+variable "iam_instance_profile_name" { type = string }

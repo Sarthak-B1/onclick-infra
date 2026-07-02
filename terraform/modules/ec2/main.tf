@@ -13,7 +13,9 @@ data "aws_iam_policy_document" "prometheus_ec2_discovery" {
     actions = [
       "ec2:DescribeAvailabilityZones",
       "ec2:DescribeInstances",
-      "ec2:DescribeTags"
+      "ec2:DescribeTags",
+      "elasticfilesystem:DescribeMountTargets",
+      "elasticfilesystem:DescribeFileSystems"
     ]
     resources = ["*"]
   }

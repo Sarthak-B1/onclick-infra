@@ -7,6 +7,10 @@ resource "aws_launch_template" "grafana_lt" {
 
   update_default_version = true
 
+  iam_instance_profile {
+    name = var.iam_instance_profile_name
+  }
+
   vpc_security_group_ids = [
     var.monitoring_sg_id
   ]

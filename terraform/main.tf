@@ -98,6 +98,7 @@ module "autoscaling" {
   monitoring_sg_id   = module.security_group.monitoring_sg_id
 
   target_group_arn   = module.alb.target_group_arn
+  iam_instance_profile_name = module.ec2.prometheus_instance_profile_name
   efs_file_system_id = module.efs.efs_id
   grafana_port       = var.grafana_port
   node_exporter_port = var.node_exporter_port
