@@ -18,11 +18,9 @@
 
 ## 📐 Architecture
 
-
-    <img width="908" height="557" alt="Screenshot 2026-06-09 at 11 29 38 AM" src="https://github.com/user-attachments/assets/e6979c6d-25a0-4faf-8cea-73b41ef8d321" />
-
-
-
+<div align="center">
+  <img width="908" height="557" alt="Architecture Diagram" src="https://github.com/user-attachments/assets/e6979c6d-25a0-4faf-8cea-73b41ef8d321" />
+</div>
 
 ## 📁 Project Structure
 
