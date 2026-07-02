@@ -14,6 +14,7 @@ override.tf.json
 *_override.tf
 *_override.tf.json
 .terraform.tfstate.lock.info
+.terraform.lock.hcl
 *.tf.save
 
 # ========================
@@ -29,21 +30,25 @@ ansible-monitoring-stack/terraform.tfstate
 boto-env/
 __pycache__/
 *.pyc
+*.pyo
 
 # ========================
 # SSH Keys & Secrets
 # ========================
 *.pem
 *.key
+*.ppk
 
 # ========================
 # OS Files
 # ========================
 .DS_Store
 Thumbs.db
+*.swp
+*.swo
 
 # ========================
-# Misc
+# Misc Garbage
 # ========================
 cookies.txt
 job.xml

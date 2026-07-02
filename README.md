@@ -36,9 +36,13 @@
 ```
 onclick-infra/
 │
-├── Jenkinsfile                        # CI/CD Pipeline (Terraform + Ansible)
+├── 📄 README.md                       # Project documentation
+├── 📄 .gitignore
 │
-├── terraform/                         # Terraform Infrastructure Code
+├── 📁 jenkins/                        # Jenkins CI/CD
+│   └── Jenkinsfile                    # Full pipeline (Terraform + Ansible)
+│
+├── 📁 terraform/                      # Terraform Infrastructure Code
 │   ├── backend.tf                     # S3 remote backend + DynamoDB lock
 │   ├── provider.tf                    # AWS provider config
 │   ├── main.tf                        # Root module: calls all sub-modules
