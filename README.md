@@ -2,7 +2,7 @@
 
 # 🚀 onclick-infra
 
-### Production-Grade Monitoring Infrastructure on AWS
+### Monitoring Infrastructure on AWS
 
 [![Terraform](https://img.shields.io/badge/Terraform-≥1.5.0-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)](https://www.terraform.io/)
 [![Ansible](https://img.shields.io/badge/Ansible-≥2.14-EE0000?style=for-the-badge&logo=ansible&logoColor=white)](https://www.ansible.com/)
@@ -19,29 +19,9 @@
 ## 📐 Architecture
 
 ```
-                               ┌─────────────────────────────────────────────┐
-                               │              AWS  (ap-south-1)               │
-                               │                                               │
-  🌐 Internet ─────────────────►  🔀 ALB  (port 80)                          │
-                               │       │                                       │
-                               │       ▼                                       │
-                               │  📊 Grafana ASG  (2–4 nodes)                 │
-                               │       │  EFS Mount → /var/lib/grafana         │
-                               │       ▼                                       │
-                               │  💾 EFS  (Shared Grafana DB)                 │
-                               │                                               │
-                               │  🔐 Bastion Host  (Public Subnet)            │
-                               │       │                                       │
-                               │       ├──► 📈 Prometheus Primary              │
-                               │       │         └─ EBS 50GB (TSDB)           │
-                               │       └──► 📈 Prometheus Replica              │
-                               │                 └─ EBS 50GB (TSDB)           │
-                               │                                               │
-                               │  📡 Node Exporter  (on every node)           │
-                               └─────────────────────────────────────────────┘
+            <img width="908" height="557" alt="Screenshot 2026-06-09 at 11 29 38 AM" src="https://github.com/user-attachments/assets/34ecfd3c-012c-49af-9dd9-c38f47c0d7e9" />
 ```
 
----
 
 ## 📁 Project Structure
 
