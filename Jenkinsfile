@@ -43,7 +43,7 @@ pipeline {
 
         stage('Terraform Init & Validate') {
             steps {
-                dir('.') {
+                dir('terraform') {
                     sh '''
                         echo "=== Terraform Version ==="
                         terraform version
@@ -67,7 +67,7 @@ pipeline {
 
         stage('Terraform Plan') {
             steps {
-                dir('.') {
+                dir('terraform') {
                     sh '''
                         echo "=== Generating Terraform Plan ==="
                         terraform plan \
@@ -98,7 +98,7 @@ pipeline {
                 expression { params.ACTION == 'apply' }
             }
             steps {
-                dir('.') {
+                dir('terraform') {
                     sh '''
                         echo "=== Applying Terraform Plan ==="
                         terraform apply -input=false -auto-approve tfplan.out
@@ -112,7 +112,7 @@ pipeline {
                 expression { params.ACTION == 'destroy' }
             }
             steps {
-                dir('.') {
+                dir('terraform') {
                     sh '''
                         echo "=== Destroying Infrastructure ==="
                         terraform destroy \
