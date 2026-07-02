@@ -154,10 +154,14 @@ pipeline {
                         chmod 400 "${SSH_KEY_FILE}"
                         
                         export ANSIBLE_HOST_KEY_CHECKING=False
+                        
+                        # Extract dynamic outputs from Terraform
+                        EFS_ID=$(cd ../terraform && terraform output -raw efs_id)
 
                         ansible-playbook play.yml \
                             -e "ansible_ssh_private_key_file=${SSH_KEY_FILE}" \
                             -e "aws_region=${AWS_REGION}" \
+                            -e "grafana_efs_file_system_id=${EFS_ID}" \
                             --inventory=inventory/ \
                             --diff
                     '''
