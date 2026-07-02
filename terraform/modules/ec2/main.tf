@@ -20,13 +20,13 @@ data "aws_iam_policy_document" "prometheus_ec2_discovery" {
 }
 
 resource "aws_iam_role" "prometheus" {
-  name               = "prometheus-ec2-role-v2"
+  name               = "prometheus-ec2-role-v5"
   assume_role_policy = data.aws_iam_policy_document.prometheus_assume_role.json
-  tags               = merge(var.tags, { Name = "prometheus-ec2-role-v2" })
+  tags               = merge(var.tags, { Name = "prometheus-ec2-role-v5" })
 }
 
 resource "aws_iam_role_policy" "prometheus_ec2_discovery" {
-  name   = "prometheus-ec2-policy-v2"
+  name   = "prometheus-ec2-policy-v5"
   role   = aws_iam_role.prometheus.id
   policy = data.aws_iam_policy_document.prometheus_ec2_discovery.json
 }
@@ -36,7 +36,7 @@ data "aws_availability_zones" "available" {
 }
 
 resource "aws_iam_instance_profile" "prometheus" {
-  name = "prometheus-instance-profile-v2"
+  name = "prometheus-instance-profile-v5"
   role = aws_iam_role.prometheus.name
 }
 

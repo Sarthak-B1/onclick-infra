@@ -51,7 +51,7 @@ pipeline {
                         echo "=== Initializing Terraform ==="
                         terraform init \
                             -backend-config="bucket=sarthak-prometheus-tfstate-2026-ap-south-1" \
-                            -backend-config="key=terraform/terraform-v4.tfstate" \
+                            -backend-config="key=terraform/terraform-v5.tfstate" \
                             -backend-config="region=ap-south-1" \
                             -backend-config="encrypt=true" \
                             -backend-config="dynamodb_table=terraform-lock-table" \

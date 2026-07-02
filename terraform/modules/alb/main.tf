@@ -1,5 +1,5 @@
 resource "aws_lb" "alb" {
-  name               = "monitoring-alb-v2"
+  name               = "monitoring-alb-v5"
   internal           = false
   load_balancer_type = "application"
 
@@ -14,13 +14,13 @@ resource "aws_lb" "alb" {
   tags = merge(
     var.tags,
     {
-      Name = "monitoring-alb-v2"
+      Name = "monitoring-alb-v5"
     }
   )
 }
 
 resource "aws_lb_target_group" "grafana_tg" {
-  name     = "grafana-tg-v4"
+  name     = "grafana-tg-v5"
   port     = var.grafana_port
   protocol = "HTTP"
   vpc_id   = var.vpc_id
@@ -49,7 +49,7 @@ resource "aws_lb_target_group" "grafana_tg" {
   tags = merge(
     var.tags,
     {
-      Name = "grafana-tg-v4"
+      Name = "grafana-tg-v5"
     }
   )
 }
