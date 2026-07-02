@@ -2,7 +2,7 @@
 
 resource "aws_security_group" "bastion_sg" {
 
-  name   = "bastion-sg-v3"
+  name   = "bastion-sg-v4"
   vpc_id = var.vpc_id
 
   ingress {
@@ -37,7 +37,7 @@ resource "aws_security_group" "bastion_sg" {
 
 resource "aws_security_group" "alb_sg" {
 
-  name   = "alb-sg-v3"
+  name   = "alb-sg-v4"
   vpc_id = var.vpc_id
 
   ingress {
@@ -82,7 +82,7 @@ resource "aws_security_group" "alb_sg" {
 
 resource "aws_security_group" "monitoring_sg" {
 
-  name   = "monitoring-sg-v3"
+  name   = "monitoring-sg-v4"
   vpc_id = var.vpc_id
 
   ingress {
