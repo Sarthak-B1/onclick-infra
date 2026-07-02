@@ -4,7 +4,9 @@ pipeline {
     environment {
         AWS_REGION          = 'ap-south-1'
         TF_WORKSPACE        = 'terraform-monitoring-stack'
-        SSH_KEY_FILE        = credentials('ansible-ssh-key')        
+        
+        // REVERTED to the correct original credential ID that actually exists in Jenkins
+        SSH_KEY_FILE        = credentials('monitoring-ssh-private-key')        
         AWS_ACCESS_KEY_ID   = credentials('aws-access-key-id')      
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key') 
         
@@ -203,7 +205,9 @@ pipeline {
             """
         }
         always {
-            cleanWs()
+            node {
+                cleanWs()
+            }
         }
     }
 }
