@@ -20,7 +20,7 @@ resource "aws_lb" "alb" {
 }
 
 resource "aws_lb_target_group" "grafana_tg" {
-  name     = "grafana-tg-v2"
+  name     = "grafana-tg-v3"
   port     = var.grafana_port
   protocol = "HTTP"
   vpc_id   = var.vpc_id
@@ -49,7 +49,7 @@ resource "aws_lb_target_group" "grafana_tg" {
   tags = merge(
     var.tags,
     {
-      Name = "grafana-tg-v2"
+      Name = "grafana-tg-v3"
     }
   )
 }
