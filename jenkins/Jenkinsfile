@@ -3,8 +3,8 @@ pipeline {
     agent any
 
     environment {
-        // Add common binary paths so Jenkins can find terraform and ansible
-        PATH                = "/opt/homebrew/bin:/usr/local/bin:${env.PATH}"
+        // Prepend Homebrew to PATH so Jenkins can find terraform and ansible
+        PATH+EXTRA          = "/opt/homebrew/bin:/usr/local/bin"
         AWS_REGION          = 'ap-south-1'
         TF_WORKSPACE        = 'terraform-monitoring-stack'
         SSH_KEY_FILE        = credentials('ansible-ssh-key')        // Jenkins secret: SSH private key
