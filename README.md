@@ -19,7 +19,8 @@
 ## 📐 Architecture
 
 
-            <img width="908" height="557" alt="Screenshot 2026-06-09 at 11 29 38 AM" src="https://github.com/user-attachments/assets/34ecfd3c-012c-49af-9dd9-c38f47c0d7e9" />
+    <img width="908" height="557" alt="Screenshot 2026-06-09 at 11 29 38 AM" src="https://github.com/user-attachments/assets/e6979c6d-25a0-4faf-8cea-73b41ef8d321" />
+
 
 
 
