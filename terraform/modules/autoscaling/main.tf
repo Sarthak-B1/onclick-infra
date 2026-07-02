@@ -41,7 +41,7 @@ resource "aws_launch_template" "grafana_lt" {
 }
 
 resource "aws_autoscaling_group" "grafana_asg" {
-  name = "grafana-auto-scaling-group"
+  name = "grafana-asg-v2"
 
   desired_capacity = var.desired_capacity
   max_size         = var.max_size

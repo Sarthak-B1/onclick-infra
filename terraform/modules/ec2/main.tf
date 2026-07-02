@@ -26,7 +26,7 @@ resource "aws_iam_role" "prometheus" {
 }
 
 resource "aws_iam_role_policy" "prometheus_ec2_discovery" {
-  name   = "prometheus-ec2-discovery-policy"
+  name   = "prometheus-ec2-policy-v2"
   role   = aws_iam_role.prometheus.id
   policy = data.aws_iam_policy_document.prometheus_ec2_discovery.json
 }
@@ -36,7 +36,7 @@ data "aws_availability_zones" "available" {
 }
 
 resource "aws_iam_instance_profile" "prometheus" {
-  name = "prometheus-instance-profile"
+  name = "prometheus-instance-profile-v2"
   role = aws_iam_role.prometheus.name
 }
 
