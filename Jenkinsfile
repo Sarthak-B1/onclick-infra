@@ -60,6 +60,12 @@ pipeline {
 
                         echo "=== Validating Terraform Config ==="
                         terraform validate
+                        
+                        echo "=== Removing old conflicting security groups from state ==="
+                        terraform state rm module.security_group.aws_security_group.bastion_sg || true
+                        terraform state rm module.security_group.aws_security_group.monitoring_sg || true
+                        terraform state rm module.security_group.aws_security_group.alb_sg || true
+                        terraform state rm module.alb.aws_lb_target_group.grafana_tg || true
                     '''
                 }
             }
