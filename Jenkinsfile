@@ -82,17 +82,7 @@ pipeline {
             }
         }
 
-        stage('Approval') {
-            when {
-                expression { params.ACTION == 'apply' }
-            }
-            steps {
-                timeout(time: 15, unit: 'MINUTES') {
-                    input message: "⚠️  Approve Terraform ${params.ACTION}?",
-                          ok: "Yes, ${params.ACTION}!"
-                }
-            }
-        }
+
 
         stage('Terraform Apply') {
             when {
