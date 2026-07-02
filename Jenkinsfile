@@ -205,7 +205,7 @@ pipeline {
             """
         }
         always {
-            node {
+            node('built-in') {
                 cleanWs()
             }
         }
