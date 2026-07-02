@@ -16,7 +16,7 @@ pipeline {
     parameters {
         choice(
             name: 'ACTION',
-            choices: ['plan', 'apply', 'destroy'],
+            choices: ['plan', 'apply'],
             description: 'Select Terraform action to perform'
         )
         booleanParam(
@@ -83,7 +83,7 @@ pipeline {
 
         stage('Approval') {
             when {
-                expression { params.ACTION in ['apply', 'destroy'] }
+                expression { params.ACTION == 'apply' }
             }
             steps {
                 timeout(time: 15, unit: 'MINUTES') {
@@ -107,24 +107,7 @@ pipeline {
             }
         }
 
-        stage('Terraform Destroy') {
-            when {
-                expression { params.ACTION == 'destroy' }
-            }
-            steps {
-                dir('terraform') {
-                    sh '''
-                        echo "=== Destroying Infrastructure ==="
-                        terraform destroy \
-                            -var="aws_region=${AWS_REGION}" \
-                            -var="instance_type=t3.micro" \
-                            -var="key_name=sarthak" \
-                            -input=false \
-                            -auto-approve
-                    '''
-                }
-            }
-        }
+
 
         stage('Wait for EC2 Readiness') {
             when {
