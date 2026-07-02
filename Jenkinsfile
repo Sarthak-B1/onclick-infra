@@ -1,13 +1,14 @@
 pipeline {
-
     agent any
 
     environment {
         AWS_REGION          = 'ap-south-1'
         TF_WORKSPACE        = 'terraform-monitoring-stack'
-        SSH_KEY_FILE        = credentials('monitoring-ssh-private-key')        // Jenkins secret: SSH private key
-        AWS_ACCESS_KEY_ID   = credentials('aws-access-key-id')      // Jenkins secret: AWS Access Key
-        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key') // Jenkins secret: AWS Secret Key
+        SSH_KEY_FILE        = credentials('ansible-ssh-key')        
+        AWS_ACCESS_KEY_ID   = credentials('aws-access-key-id')      
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key') 
+        
+        PATH               = "/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${env.PATH}"
     }
 
     parameters {
@@ -31,10 +32,6 @@ pipeline {
     }
 
     stages {
-
-        // ─────────────────────────────────────────────
-        // STAGE 1: Checkout Code
-        // ─────────────────────────────────────────────
         stage('Checkout') {
             steps {
                 checkout scm
@@ -42,18 +39,22 @@ pipeline {
             }
         }
 
-        // ─────────────────────────────────────────────
-        // STAGE 2: Terraform Init & Validate
-        // ─────────────────────────────────────────────
         stage('Terraform Init & Validate') {
             steps {
-                dir('terraform') {
+                dir('.') {
                     sh '''
                         echo "=== Terraform Version ==="
                         terraform version
 
                         echo "=== Initializing Terraform ==="
-                        terraform init -input=false
+                        terraform init \
+                            -backend-config="bucket=sarthak-prometheus-tfstate-2026-ap-south-1" \
+                            -backend-config="key=terraform/terraform.tfstate" \
+                            -backend-config="region=ap-south-1" \
+                            -backend-config="encrypt=true" \
+                            -backend-config="dynamodb_table=terraform-lock-table" \
+                            -reconfigure \
+                            -input=false
 
                         echo "=== Validating Terraform Config ==="
                         terraform validate
@@ -62,16 +63,15 @@ pipeline {
             }
         }
 
-        // ─────────────────────────────────────────────
-        // STAGE 3: Terraform Plan
-        // ─────────────────────────────────────────────
         stage('Terraform Plan') {
             steps {
-                dir('terraform') {
+                dir('.') {
                     sh '''
                         echo "=== Generating Terraform Plan ==="
                         terraform plan \
                             -var="aws_region=${AWS_REGION}" \
+                            -var="instance_type=t3.micro" \
+                            -var="key_name=sarthak" \
                             -out=tfplan.out \
                             -input=false
                     '''
@@ -79,9 +79,6 @@ pipeline {
             }
         }
 
-        // ─────────────────────────────────────────────
-        // STAGE 4: Approval (only for apply / destroy)
-        // ─────────────────────────────────────────────
         stage('Approval') {
             when {
                 expression { params.ACTION in ['apply', 'destroy'] }
@@ -94,15 +91,12 @@ pipeline {
             }
         }
 
-        // ─────────────────────────────────────────────
-        // STAGE 5: Terraform Apply
-        // ─────────────────────────────────────────────
         stage('Terraform Apply') {
             when {
                 expression { params.ACTION == 'apply' }
             }
             steps {
-                dir('terraform') {
+                dir('.') {
                     sh '''
                         echo "=== Applying Terraform Plan ==="
                         terraform apply -input=false -auto-approve tfplan.out
@@ -111,19 +105,18 @@ pipeline {
             }
         }
 
-        // ─────────────────────────────────────────────
-        // STAGE 6: Terraform Destroy
-        // ─────────────────────────────────────────────
         stage('Terraform Destroy') {
             when {
                 expression { params.ACTION == 'destroy' }
             }
             steps {
-                dir('terraform') {
+                dir('.') {
                     sh '''
                         echo "=== Destroying Infrastructure ==="
                         terraform destroy \
                             -var="aws_region=${AWS_REGION}" \
+                            -var="instance_type=t3.micro" \
+                            -var="key_name=sarthak" \
                             -input=false \
                             -auto-approve
                     '''
@@ -131,9 +124,6 @@ pipeline {
             }
         }
 
-        // ─────────────────────────────────────────────
-        // STAGE 7: Wait for EC2 instances to be ready
-        // ─────────────────────────────────────────────
         stage('Wait for EC2 Readiness') {
             when {
                 allOf {
@@ -147,9 +137,6 @@ pipeline {
             }
         }
 
-        // ─────────────────────────────────────────────
-        // STAGE 8: Ansible Syntax Check
-        // ─────────────────────────────────────────────
         stage('Ansible Syntax Check') {
             when {
                 allOf {
@@ -167,9 +154,6 @@ pipeline {
             }
         }
 
-        // ─────────────────────────────────────────────
-        // STAGE 9: Run Ansible Playbook
-        // ─────────────────────────────────────────────
         stage('Run Ansible Playbook') {
             when {
                 allOf {
@@ -182,21 +166,20 @@ pipeline {
                     sh '''
                         echo "=== Running Ansible Playbook ==="
                         chmod 400 "${SSH_KEY_FILE}"
+                        
+                        export ANSIBLE_HOST_KEY_CHECKING=False
 
                         ansible-playbook play.yml \
                             -e "ansible_ssh_private_key_file=${SSH_KEY_FILE}" \
                             -e "aws_region=${AWS_REGION}" \
+                            --inventory=inventory/ \
                             --diff
                     '''
                 }
             }
         }
-
     }
 
-    // ─────────────────────────────────────────────
-    // POST Actions
-    // ─────────────────────────────────────────────
     post {
         success {
             echo """
