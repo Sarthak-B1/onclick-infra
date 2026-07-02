@@ -1,299 +1,226 @@
 pipeline {
+
     agent any
 
-    triggers {
-        githubPush()
-    }
-
-    /*
-     * ─────────────────────────────────────────────
-     *  Terraform + Ansible – Monitoring Stack CI/CD
-     *  Owner  : Sarthak Bhatnagar
-     *  Project: Monitoring Infrastructure (AWS)
-     * ─────────────────────────────────────────────
-     */
-
-    // ── Environment Variables ──────────────────────────────────────────────
     environment {
-        // PATH fix: Jenkins shell doesn't load ~/.zshrc so Homebrew tools not found
-        PATH               = "/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${env.PATH}"
-
-        // AWS credentials stored as Jenkins secret text credentials
-        AWS_ACCESS_KEY_ID     = credentials('aws-access-key-id')
-        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
-        AWS_DEFAULT_REGION    = 'ap-south-1'
-
-        // S3 backend (must match backend.tf)
-        TF_STATE_BUCKET    = 'sarthak-prometheus-tfstate-2026-ap-south-1'
-        TF_STATE_KEY       = 'terraform/terraform.tfstate'
-        TF_DYNAMO_TABLE    = 'terraform-lock-table'
-
-        // SSH key for Ansible (stored as Jenkins secret file credential)
-        SSH_KEY_FILE       = credentials('monitoring-ssh-private-key')
-
-        // Terraform workspace / environment label
-        TF_ENV             = "${params.ENVIRONMENT ?: 'production'}"
-
-        // Paths
-        TF_DIR             = '.'
-        ANSIBLE_DIR        = 'ansible-monitoring-stack'
+        AWS_REGION          = 'ap-south-1'
+        TF_WORKSPACE        = 'terraform-monitoring-stack'
+        SSH_KEY_FILE        = credentials('ansible-ssh-key')        // Jenkins secret: SSH private key
+        AWS_ACCESS_KEY_ID   = credentials('aws-access-key-id')      // Jenkins secret: AWS Access Key
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key') // Jenkins secret: AWS Secret Key
     }
 
-    // ── Parameters ─────────────────────────────────────────────────────────
     parameters {
         choice(
             name: 'ACTION',
-            choices: ['apply', 'plan'],
-            description: 'Terraform action to perform'
-        )
-        choice(
-            name: 'ENVIRONMENT',
-            choices: ['production', 'staging'],
-            description: 'Target environment'
-        )
-        string(
-            name: 'INSTANCE_TYPE',
-            defaultValue: 't3.micro',
-            description: 'EC2 instance type (e.g. t3.micro, t3.small)'
+            choices: ['plan', 'apply', 'destroy'],
+            description: 'Select Terraform action to perform'
         )
         booleanParam(
             name: 'RUN_ANSIBLE',
             defaultValue: true,
-            description: 'Run Ansible provisioning after Terraform apply?'
-        )
-        booleanParam(
-            name: 'AUTO_APPROVE',
-            defaultValue: true,
-            description: 'Auto-approve Terraform apply/destroy without manual confirmation?'
+            description: 'Run Ansible playbook after Terraform apply?'
         )
     }
 
-    // ── Options ────────────────────────────────────────────────────────────
     options {
-        timestamps()
-        ansiColor('xterm')
-        disableConcurrentBuilds()
         buildDiscarder(logRotator(numToKeepStr: '10'))
         timeout(time: 60, unit: 'MINUTES')
+        ansiColor('xterm')
+        timestamps()
     }
 
-    // ══════════════════════════════════════════════════════════════════════
-    //  S T A G E S
-    // ══════════════════════════════════════════════════════════════════════
     stages {
 
-        // ── 1. Checkout ───────────────────────────────────────────────────
+        // ─────────────────────────────────────────────
+        // STAGE 1: Checkout Code
+        // ─────────────────────────────────────────────
         stage('Checkout') {
             steps {
-                echo "📥 Checking out source code..."
                 checkout scm
+                echo "✅ Code checked out from: ${env.GIT_URL} | Branch: ${env.GIT_BRANCH}"
             }
         }
 
-        // ── 2. Validate Tools ─────────────────────────────────────────────
-        stage('Validate Tools') {
+        // ─────────────────────────────────────────────
+        // STAGE 2: Terraform Init & Validate
+        // ─────────────────────────────────────────────
+        stage('Terraform Init & Validate') {
             steps {
-                sh '''
-                    echo "🔧 Verifying required tools..."
-                    terraform version
-                    ansible --version
-                    aws --version
-                '''
-            }
-        }
-
-        // ── 3. Terraform Init ─────────────────────────────────────────────
-        stage('Terraform Init') {
-            steps {
-                dir("${TF_DIR}") {
+                dir('terraform') {
                     sh '''
-                        echo "🚀 Initialising Terraform with S3 backend..."
-                        terraform init \
-                            -backend-config="bucket=${TF_STATE_BUCKET}" \
-                            -backend-config="key=${TF_STATE_KEY}" \
-                            -backend-config="region=${AWS_DEFAULT_REGION}" \
-                            -backend-config="encrypt=true" \
-                            -backend-config="dynamodb_table=${TF_DYNAMO_TABLE}" \
-                            -reconfigure \
-                            -input=false
-                    '''
-                }
-            }
-        }
+                        echo "=== Terraform Version ==="
+                        terraform version
 
-        // ── 4. Terraform Validate ─────────────────────────────────────────
-        stage('Terraform Validate') {
-            steps {
-                dir("${TF_DIR}") {
-                    sh '''
-                        echo "✅ Validating Terraform configuration..."
+                        echo "=== Initializing Terraform ==="
+                        terraform init -input=false
+
+                        echo "=== Validating Terraform Config ==="
                         terraform validate
                     '''
                 }
             }
         }
 
-        // ── 5. Terraform Format Check ─────────────────────────────────────
-        stage('Terraform Format Check') {
-            steps {
-                dir("${TF_DIR}") {
-                    sh '''
-                        echo "🎨 Checking Terraform formatting..."
-                        terraform fmt -check -recursive || \
-                            (echo "⚠️  Some files are not formatted. Run: terraform fmt -recursive" && exit 1)
-                    '''
-                }
-            }
-        }
-
-        // ── 6. Terraform Plan ─────────────────────────────────────────────
+        // ─────────────────────────────────────────────
+        // STAGE 3: Terraform Plan
+        // ─────────────────────────────────────────────
         stage('Terraform Plan') {
             steps {
-                dir("${TF_DIR}") {
+                dir('terraform') {
                     sh '''
-                        echo "📋 Generating Terraform plan..."
+                        echo "=== Generating Terraform Plan ==="
                         terraform plan \
-                            -var="aws_region=${AWS_DEFAULT_REGION}" \
-                            -var="instance_type=${INSTANCE_TYPE}" \
-                            -var="key_name=sarthak" \
+                            -var="aws_region=${AWS_REGION}" \
                             -out=tfplan.out \
-                            -input=false -no-color > tfplan.txt
-                        cat tfplan.txt
+                            -input=false
                     '''
                 }
-                archiveArtifacts artifacts: 'tfplan.out,tfplan.txt', allowEmptyArchive: false
             }
         }
 
-        // ── 7. Approval Gate (Apply only) ───────────────────────
-        stage('Approval Gate') {
+        // ─────────────────────────────────────────────
+        // STAGE 4: Approval (only for apply / destroy)
+        // ─────────────────────────────────────────────
+        stage('Approval') {
             when {
-                expression { params.ACTION == 'apply' }
+                expression { params.ACTION in ['apply', 'destroy'] }
             }
             steps {
-                script {
-                    if (params.AUTO_APPROVE) {
-                        echo "✅ Auto-approve is enabled. Skipping manual approval..."
-                    } else {
-                        def planOutput = "Plan output not found."
-                        if (fileExists("${TF_DIR}/tfplan.txt")) {
-                            planOutput = readFile("${TF_DIR}/tfplan.txt")
-                        }
-                        input(
-                            message: "✅ APPLY – Are you sure you want to apply the ${params.ENVIRONMENT} monitoring stack?",
-                            ok: 'Proceed',
-                            submitter: 'admin,ops-team',
-                            parameters: [
-                                text(name: 'Terraform Plan', description: 'Review the plan before proceeding:', defaultValue: planOutput)
-                            ]
-                        )
-                    }
+                timeout(time: 15, unit: 'MINUTES') {
+                    input message: "⚠️  Approve Terraform ${params.ACTION}?",
+                          ok: "Yes, ${params.ACTION}!"
                 }
             }
         }
 
-        // ── 8. Terraform Apply ────────────────────────────────────────────
+        // ─────────────────────────────────────────────
+        // STAGE 5: Terraform Apply
+        // ─────────────────────────────────────────────
         stage('Terraform Apply') {
             when {
                 expression { params.ACTION == 'apply' }
             }
             steps {
-                dir("${TF_DIR}") {
+                dir('terraform') {
                     sh '''
-                        echo "🏗️  Applying Terraform plan..."
-                        terraform apply \
-                            -input=false \
-                            -auto-approve \
-                            tfplan.out
+                        echo "=== Applying Terraform Plan ==="
+                        terraform apply -input=false -auto-approve tfplan.out
                     '''
                 }
             }
         }
 
-        // ── 9. Capture Terraform Outputs ──────────────────────────────────
-        stage('Capture Outputs') {
+        // ─────────────────────────────────────────────
+        // STAGE 6: Terraform Destroy
+        // ─────────────────────────────────────────────
+        stage('Terraform Destroy') {
             when {
-                expression { params.ACTION == 'apply' }
+                expression { params.ACTION == 'destroy' }
             }
             steps {
-                dir("${TF_DIR}") {
-                    script {
-                        sh '''
-                            echo "📤 Capturing Terraform outputs..."
-                            terraform output -json > tf-outputs.json
-                            cat tf-outputs.json
-                        '''
-                        archiveArtifacts artifacts: 'tf-outputs.json', allowEmptyArchive: false
-                    }
+                dir('terraform') {
+                    sh '''
+                        echo "=== Destroying Infrastructure ==="
+                        terraform destroy \
+                            -var="aws_region=${AWS_REGION}" \
+                            -input=false \
+                            -auto-approve
+                    '''
                 }
             }
         }
 
-        // ── 10. Ansible Provisioning ──────────────────────────────────────
-        stage('Ansible Provision') {
+        // ─────────────────────────────────────────────
+        // STAGE 7: Wait for EC2 instances to be ready
+        // ─────────────────────────────────────────────
+        stage('Wait for EC2 Readiness') {
             when {
                 allOf {
                     expression { params.ACTION == 'apply' }
-                    expression { params.RUN_ANSIBLE }
+                    expression { params.RUN_ANSIBLE == true }
                 }
             }
             steps {
-                dir("${ANSIBLE_DIR}") {
+                echo "⏳ Waiting 60 seconds for EC2 instances to fully boot and install Python..."
+                sleep(time: 60, unit: 'SECONDS')
+            }
+        }
+
+        // ─────────────────────────────────────────────
+        // STAGE 8: Ansible Syntax Check
+        // ─────────────────────────────────────────────
+        stage('Ansible Syntax Check') {
+            when {
+                allOf {
+                    expression { params.ACTION == 'apply' }
+                    expression { params.RUN_ANSIBLE == true }
+                }
+            }
+            steps {
+                dir('ansible-monitoring-stack') {
                     sh '''
-                        echo "🤖 Starting Ansible provisioning..."
-                        chmod 600 "${SSH_KEY_FILE}"
-
-                        # Force SSH to use ONLY the Jenkins credential key
-                        export ANSIBLE_HOST_KEY_CHECKING=False
-                        export ANSIBLE_PRIVATE_KEY_FILE="${SSH_KEY_FILE}"
-
-                        ansible-playbook play.yml \
-                            --private-key="${SSH_KEY_FILE}" \
-                            --inventory=inventory/ \
-                            --ssh-extra-args="-o IdentitiesOnly=yes -o IdentityFile=${SSH_KEY_FILE}" \
-                            --diff \
-                            -v
+                        echo "=== Ansible Syntax Check ==="
+                        ansible-playbook play.yml --syntax-check
                     '''
                 }
             }
         }
 
-    } // end of stages
+        // ─────────────────────────────────────────────
+        // STAGE 9: Run Ansible Playbook
+        // ─────────────────────────────────────────────
+        stage('Run Ansible Playbook') {
+            when {
+                allOf {
+                    expression { params.ACTION == 'apply' }
+                    expression { params.RUN_ANSIBLE == true }
+                }
+            }
+            steps {
+                dir('ansible-monitoring-stack') {
+                    sh '''
+                        echo "=== Running Ansible Playbook ==="
+                        chmod 400 "${SSH_KEY_FILE}"
 
-    // ══════════════════════════════════════════════════════════════════════
-    //  P O S T   A C T I O N S
-    // ══════════════════════════════════════════════════════════════════════
-    post {
-        always {
-            // node block required for sh and cleanWs to have FilePath context
-            node('built-in') {
-                echo "🧹 Cleaning up workspace..."
-                sh 'rm -f tfplan.out tf-outputs.json || true'
-                cleanWs()
+                        ansible-playbook play.yml \
+                            -e "ansible_ssh_private_key_file=${SSH_KEY_FILE}" \
+                            -e "aws_region=${AWS_REGION}" \
+                            --diff
+                    '''
+                }
             }
         }
 
+    }
+
+    // ─────────────────────────────────────────────
+    // POST Actions
+    // ─────────────────────────────────────────────
+    post {
         success {
-            echo "✅ Pipeline completed successfully!"
-            // Uncomment and configure to send Slack/email notifications:
-            // slackSend(
-            //     channel: '#devops-alerts',
-            //     color: 'good',
-            //     message: "✅ *${env.JOB_NAME}* #${env.BUILD_NUMBER} succeeded!\nAction: ${params.ACTION} | Env: ${params.ENVIRONMENT}\n${env.BUILD_URL}"
-            // )
+            echo """
+            ✅ Pipeline Completed Successfully!
+            ─────────────────────────────────────
+            Action  : ${params.ACTION}
+            Branch  : ${env.GIT_BRANCH}
+            Build   : #${env.BUILD_NUMBER}
+            ─────────────────────────────────────
+            """
         }
-
         failure {
-            echo "❌ Pipeline FAILED!"
-            // slackSend(
-            //     channel: '#devops-alerts',
-            //     color: 'danger',
-            //     message: "❌ *${env.JOB_NAME}* #${env.BUILD_NUMBER} FAILED!\nAction: ${params.ACTION} | Env: ${params.ENVIRONMENT}\n${env.BUILD_URL}"
-            // )
+            echo """
+            ❌ Pipeline Failed!
+            ─────────────────────────────────────
+            Action  : ${params.ACTION}
+            Branch  : ${env.GIT_BRANCH}
+            Build   : #${env.BUILD_NUMBER}
+            Check console output for details.
+            ─────────────────────────────────────
+            """
         }
-
-        aborted {
-            echo "⚠️  Pipeline was aborted."
+        always {
+            cleanWs()
         }
     }
 }

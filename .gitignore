@@ -1,19 +1,49 @@
+# ========================
+# Terraform Ignores
+# ========================
 .terraform/
 *.tfstate
 *.tfstate.*
+*.tfplan
+tfplan.out
+plan-output.txt
 crash.log
 crash.*.log
-*.tfplan
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
 .terraform.tfstate.lock.info
+*.tf.save
 
-# OS files
-.DS_Store
-
-# Ansible Virtual Environment
+# ========================
+# Ansible Ignores
+# ========================
 ansible-monitoring-stack/.venv/
 ansible-monitoring-stack/.DS_Store
+ansible-monitoring-stack/terraform.tfstate
+
+# ========================
+# Python / boto envs
+# ========================
+boto-env/
+__pycache__/
+*.pyc
+
+# ========================
+# SSH Keys & Secrets
+# ========================
 *.pem
+*.key
+
+# ========================
+# OS Files
+# ========================
+.DS_Store
+Thumbs.db
+
+# ========================
+# Misc
+# ========================
+cookies.txt
+job.xml
