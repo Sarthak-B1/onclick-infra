@@ -5,7 +5,7 @@ pipeline {
     environment {
         AWS_REGION          = 'ap-south-1'
         TF_WORKSPACE        = 'terraform-monitoring-stack'
-        SSH_KEY_FILE        = credentials('ansible-ssh-key')        // Jenkins secret: SSH private key
+        SSH_KEY_FILE        = credentials('monitoring-ssh-private-key')        // Jenkins secret: SSH private key
         AWS_ACCESS_KEY_ID   = credentials('aws-access-key-id')      // Jenkins secret: AWS Access Key
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key') // Jenkins secret: AWS Secret Key
     }
