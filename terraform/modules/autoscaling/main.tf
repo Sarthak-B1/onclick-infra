@@ -56,7 +56,7 @@ resource "aws_autoscaling_group" "grafana_asg" {
   target_group_arns = var.target_group_arn != "" ? [var.target_group_arn] : []
 
   health_check_type         = "ELB"
-  health_check_grace_period = 900
+  health_check_grace_period = 1800
   protect_from_scale_in     = false
 
   launch_template {
