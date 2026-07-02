@@ -1,5 +1,5 @@
 resource "aws_efs_file_system" "grafana_efs" {
-  creation_token = "grafana-efs"
+  creation_token = "grafana-efs-v2"
   encrypted      = true
 
   throughput_mode = "bursting"
@@ -7,7 +7,7 @@ resource "aws_efs_file_system" "grafana_efs" {
   tags = merge(
     var.tags,
     {
-      Name = "grafana-efs"
+      Name = "grafana-efs-v2"
     }
   )
 }
