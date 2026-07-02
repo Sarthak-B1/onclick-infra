@@ -1,7 +1,9 @@
 ---
-- name: Install Amazon EFS utilities on Amazon Linux
+- name: Install Amazon EFS utilities and dependencies on Amazon Linux
   ansible.builtin.yum:
-    name: amazon-efs-utils
+    name: 
+      - amazon-efs-utils
+      - python3-botocore
     state: present
   when: ansible_facts.distribution == "Amazon"
 

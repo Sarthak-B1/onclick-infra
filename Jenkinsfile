@@ -118,8 +118,8 @@ pipeline {
                 }
             }
             steps {
-                echo "⏳ Waiting 60 seconds for EC2 instances to fully boot and install Python..."
-                sleep(time: 60, unit: 'SECONDS')
+                echo "⏳ Waiting 120 seconds for EC2 instances to fully boot, install Python, and EFS DNS to propagate..."
+                sleep(time: 120, unit: 'SECONDS')
             }
         }
 
