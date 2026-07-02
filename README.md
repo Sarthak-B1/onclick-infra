@@ -1,32 +1,44 @@
-# onclick-infra — Monitoring Infrastructure Stack
+<div align="center">
 
-> **Production-grade monitoring infrastructure on AWS** using Terraform (IaC) and Ansible (Configuration Management).
+# 🚀 onclick-infra
+
+### Production-Grade Monitoring Infrastructure on AWS
+
+[![Terraform](https://img.shields.io/badge/Terraform-≥1.5.0-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)](https://www.terraform.io/)
+[![Ansible](https://img.shields.io/badge/Ansible-≥2.14-EE0000?style=for-the-badge&logo=ansible&logoColor=white)](https://www.ansible.com/)
+[![AWS](https://img.shields.io/badge/AWS-ap--south--1-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)](https://aws.amazon.com/)
+[![Jenkins](https://img.shields.io/badge/Jenkins-CI%2FCD-D24939?style=for-the-badge&logo=jenkins&logoColor=white)](https://www.jenkins.io/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](./LICENSE)
+
+*Automated deployment of Prometheus + Grafana + Node Exporter using Terraform & Ansible — with a full Jenkins CI/CD pipeline.*
+
+</div>
 
 ---
 
-## 📐 Architecture Overview
+## 📐 Architecture
 
 ```
-                         ┌──────────────────────────────────┐
-                         │           AWS (ap-south-1)        │
-                         │                                   │
-  Internet ──────────────►  ALB (port 80)                   │
-                         │     │                             │
-                         │     ▼                             │
-              ┌──────────┤  Grafana ASG (2–4 nodes)         │
-              │          │     │ EFS Mount /var/lib/grafana  │
-              │          │     ▼                             │
-              │          │  EFS (Shared Grafana DB)          │
-              │          │                                   │
-              │  Bastion ◄──── SSH Jump Host (Public)        │
-              │  Host    │     │                             │
-              │          │     ├──► Prometheus Primary       │
-              │          │     │     └─ EBS 50GB TSDB        │
-              │          │     └──► Prometheus Replica       │
-              │          │           └─ EBS 50GB TSDB        │
-              │          │                                   │
-              │          │  Node Exporter (all nodes)        │
-              └──────────┴──────────────────────────────────┘
+                               ┌─────────────────────────────────────────────┐
+                               │              AWS  (ap-south-1)               │
+                               │                                               │
+  🌐 Internet ─────────────────►  🔀 ALB  (port 80)                          │
+                               │       │                                       │
+                               │       ▼                                       │
+                               │  📊 Grafana ASG  (2–4 nodes)                 │
+                               │       │  EFS Mount → /var/lib/grafana         │
+                               │       ▼                                       │
+                               │  💾 EFS  (Shared Grafana DB)                 │
+                               │                                               │
+                               │  🔐 Bastion Host  (Public Subnet)            │
+                               │       │                                       │
+                               │       ├──► 📈 Prometheus Primary              │
+                               │       │         └─ EBS 50GB (TSDB)           │
+                               │       └──► 📈 Prometheus Replica              │
+                               │                 └─ EBS 50GB (TSDB)           │
+                               │                                               │
+                               │  📡 Node Exporter  (on every node)           │
+                               └─────────────────────────────────────────────┘
 ```
 
 ---
@@ -36,134 +48,211 @@
 ```
 onclick-infra/
 │
-├── 📄 README.md                       # Project documentation
+├── 📄 README.md
 ├── 📄 .gitignore
 │
-├── 📁 jenkins/                        # Jenkins CI/CD
-│   └── Jenkinsfile                    # Full pipeline (Terraform + Ansible)
+├── 📁 jenkins/
+│   └── 📄 Jenkinsfile                     ← Full CI/CD pipeline
 │
-├── 📁 terraform/                      # Terraform Infrastructure Code
-│   ├── backend.tf                     # S3 remote backend + DynamoDB lock
-│   ├── provider.tf                    # AWS provider config
-│   ├── main.tf                        # Root module: calls all sub-modules
-│   ├── variables.tf                   # All input variables
-│   ├── outputs.tf                     # Key outputs (ALB URL, IPs, EFS ID)
-│   ├── terraform.tfvars               # Variable values
+├── 📁 terraform/                          ← Infrastructure as Code
+│   ├── 📄 main.tf                         ← Root module
+│   ├── 📄 backend.tf                      ← S3 state + DynamoDB lock
+│   ├── 📄 provider.tf                     ← AWS provider
+│   ├── 📄 variables.tf                    ← Input variables
+│   ├── 📄 outputs.tf                      ← ALB URL, IPs, EFS ID
+│   ├── 📄 terraform.tfvars                ← Variable values
 │   │
-│   ├── bootstrap/                     # One-time S3 + DynamoDB setup
-│   │   └── main.tf
+│   ├── 📁 bootstrap/                      ← One-time S3 + DynamoDB setup
+│   │   └── 📄 main.tf
 │   │
-│   └── modules/                       # Reusable Terraform modules
-│       ├── vpc/                       # VPC, Subnets, IGW, NAT, Route Tables
-│       ├── security-group/            # Bastion, ALB, Monitoring SGs
-│       ├── ec2/                       # Bastion + Prometheus EC2 + EBS volumes
-│       ├── efs/                       # EFS Filesystem + Mount Targets
-│       ├── alb/                       # Application Load Balancer + Target Group
-│       └── autoscaling/               # Grafana Auto Scaling Group + Launch Template
+│   └── 📁 modules/
+│       ├── 📁 vpc/                        ← VPC, Subnets, IGW, NAT
+│       ├── 📁 security-group/             ← Bastion, ALB, Monitoring SGs
+│       ├── 📁 ec2/                        ← Bastion + Prometheus + EBS
+│       ├── 📁 efs/                        ← Shared EFS for Grafana
+│       ├── 📁 alb/                        ← Load Balancer + Target Group
+│       └── 📁 autoscaling/                ← Grafana ASG + Launch Template
 │
-└── ansible-monitoring-stack/          # Ansible Configuration Management
-    ├── ansible.cfg                    # Ansible settings
-    ├── play.yml                       # Main playbook
+└── 📁 ansible-monitoring-stack/           ← Configuration Management
+    ├── 📄 ansible.cfg
+    ├── 📄 play.yml                        ← Main playbook
     │
-    ├── inventory/
-    │   ├── aws_ec2.yml                # Dynamic AWS EC2 inventory (auto-discovers hosts)
-    │   └── hosts                      # Static hosts (empty — dynamic only)
+    ├── 📁 inventory/
+    │   └── 📄 aws_ec2.yml                 ← Dynamic AWS EC2 inventory
     │
-    ├── group_vars/
-    │   ├── all.yml                    # Global variables (ports, versions, paths)
-    │   └── role_bastion/vars.yml      # Bastion-specific SSH settings
+    ├── 📁 group_vars/
+    │   ├── 📄 all.yml                     ← Global vars (ports, versions)
+    │   └── 📁 role_bastion/vars.yml       ← Bastion SSH settings
     │
-    └── roles/
-        ├── common/                    # Base packages + swap setup
-        ├── security/                  # UFW / firewalld configuration
-        ├── node_exporter/             # Prometheus Node Exporter
-        ├── prometheus/                # Prometheus server + EBS mount + EC2 SD
-        ├── efs/                       # EFS mount for Grafana shared storage
-        └── grafana/                   # Grafana install + config + systemd
+    └── 📁 roles/
+        ├── 📁 common/                     ← Base packages + swap
+        ├── 📁 security/                   ← Firewall (UFW / firewalld)
+        ├── 📁 node_exporter/              ← Node Exporter setup
+        ├── 📁 prometheus/                 ← Prometheus + EBS + EC2 SD
+        ├── 📁 efs/                        ← EFS mount for Grafana
+        └── 📁 grafana/                    ← Grafana install + config
 ```
 
 ---
 
-## 🚀 Deployment Guide
+## ⚡ Quick Start
 
 ### Prerequisites
-| Tool | Version |
-|---|---|
-| Terraform | >= 1.5.0 |
-| Ansible | >= 2.14 |
-| AWS CLI | >= 2.x |
-| Python | >= 3.x |
 
-### Step 1 — Bootstrap (First time only)
-Create the S3 bucket and DynamoDB lock table for Terraform remote state:
+| Tool | Version | Install |
+|---|---|---|
+| Terraform | `>= 1.5.0` | [Download](https://developer.hashicorp.com/terraform/downloads) |
+| Ansible | `>= 2.14` | `pip install ansible` |
+| AWS CLI | `>= 2.x` | [Download](https://aws.amazon.com/cli/) |
+| Python | `>= 3.x` | [Download](https://python.org) |
+
+---
+
+### 🔧 Step 1 — Bootstrap (First time only)
+
+> Creates the **S3 bucket** + **DynamoDB table** for Terraform remote state.
+
 ```bash
 cd terraform/bootstrap
 terraform init
 terraform apply
 ```
 
-### Step 2 — Provision Infrastructure
+---
+
+### 🏗️ Step 2 — Provision Infrastructure
+
 ```bash
 cd terraform
+
+# Initialize providers
 terraform init
+
+# Preview what will be created
 terraform plan
+
+# Deploy to AWS
 terraform apply
 ```
 
-### Step 3 — Configure Servers with Ansible
+**Outputs after apply:**
+
+```
+alb_dns_name           = "monitoring-alb-xxxxxxxxx.ap-south-1.elb.amazonaws.com"
+bastion_public_ip      = "x.x.x.x"
+prometheus_primary_ip  = "10.0.3.10"
+prometheus_replica_ip  = "10.0.4.10"
+efs_id                 = "fs-xxxxxxxxx"
+```
+
+---
+
+### ⚙️ Step 3 — Configure Servers with Ansible
+
 ```bash
 cd ansible-monitoring-stack
 
-# Set your SSH key path
+# Set your SSH key
 export SSH_KEY_FILE=~/.ssh/assignment-6.pem
 
-# Run the playbook
+# Run playbook
 ansible-playbook play.yml \
   -e "ansible_ssh_private_key_file=${SSH_KEY_FILE}"
 ```
 
-### Step 4 — Access Services
-After deployment, Terraform will output:
-| Service | URL |
-|---|---|
-| **Grafana** | `http://<alb_dns_name>` |
-| **Prometheus** | `http://<prometheus_primary_ip>:9090` (via Bastion tunnel) |
+**Ansible will configure:**
+- ✅ Common packages + Swap memory on all nodes
+- ✅ Firewall rules (UFW / firewalld)
+- ✅ Node Exporter on every instance
+- ✅ Prometheus with EC2 auto-discovery + EBS mount
+- ✅ EFS mount for Grafana shared storage
+- ✅ Grafana installation + custom config
 
 ---
 
-## ⚙️ Jenkins CI/CD Pipeline
+### 🌐 Step 4 — Access Services
 
-The [Jenkinsfile](./Jenkinsfile) automates the full deployment:
+| Service | URL |
+|---|---|
+| **Grafana** | `http://<alb_dns_name>` |
+| **Prometheus** | `http://<prometheus_primary_ip>:9090` *(via Bastion tunnel)* |
+| **Node Exporter** | `http://<any_node_ip>:9100/metrics` |
+
+**Default Grafana credentials:**
+```
+Username: sarthak
+Password: sarthak@123
+```
+
+---
+
+## 🔄 Jenkins CI/CD Pipeline
+
+The [`jenkins/Jenkinsfile`](./jenkins/Jenkinsfile) automates the **full end-to-end deployment**:
 
 ```
-Checkout → Terraform Init → Terraform Plan → Approval → Terraform Apply
-       → Wait EC2 Boot → Ansible Syntax Check → Ansible Playbook
+┌──────────┐   ┌───────────────┐   ┌───────────────┐   ┌──────────┐
+│ Checkout │──►│  TF Init +    │──►│  TF Plan      │──►│ Approval │
+│          │   │  Validate     │   │               │   │  Gate    │
+└──────────┘   └───────────────┘   └───────────────┘   └────┬─────┘
+                                                             │
+          ┌──────────────────────────────────────────────────┘
+          ▼
+┌──────────────┐   ┌──────────────┐   ┌───────────────┐   ┌──────────────┐
+│  TF Apply /  │──►│  Wait EC2    │──►│ Ansible Syntax│──►│   Ansible    │
+│  Destroy     │   │  Boot (60s)  │   │ Check         │   │   Playbook   │
+└──────────────┘   └──────────────┘   └───────────────┘   └──────────────┘
 ```
 
-### Jenkins Credentials Required
-Add these credentials in Jenkins (`Manage Jenkins → Credentials`):
+### Jenkins Credentials Setup
 
-| ID | Type | Description |
+Go to: **Manage Jenkins → Credentials → Add**
+
+| Credential ID | Type | Description |
 |---|---|---|
-| `ansible-ssh-key` | SSH Private Key | EC2 SSH key (assignment-6.pem) |
+| `ansible-ssh-key` | SSH Private Key File | EC2 SSH key (.pem) |
 | `aws-access-key-id` | Secret Text | AWS Access Key ID |
 | `aws-secret-access-key` | Secret Text | AWS Secret Access Key |
 
 ### Pipeline Parameters
-| Parameter | Options | Default |
-|---|---|---|
-| `ACTION` | `plan`, `apply`, `destroy` | `plan` |
-| `RUN_ANSIBLE` | `true`, `false` | `true` |
+
+| Parameter | Options | Default | Description |
+|---|---|---|---|
+| `ACTION` | `plan` / `apply` / `destroy` | `plan` | Terraform action |
+| `RUN_ANSIBLE` | `true` / `false` | `true` | Run Ansible after apply |
 
 ---
 
-## 🔐 Security Notes
-- All `.pem` keys are excluded from git via `.gitignore`
-- Terraform state is stored encrypted in S3 with DynamoDB locking
-- Private instances are only accessible via Bastion SSH jump host
-- All EBS volumes and EFS filesystem are encrypted at rest
+## 🔐 Security
+
+| Feature | Status |
+|---|---|
+| Terraform state encrypted in S3 | ✅ |
+| State locking via DynamoDB | ✅ |
+| All EBS volumes encrypted | ✅ |
+| EFS encrypted at rest | ✅ |
+| Private instances behind Bastion | ✅ |
+| SSH keys excluded from Git | ✅ |
+| `.pem` files in `.gitignore` | ✅ |
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Cloud** | AWS (ap-south-1) |
+| **IaC** | Terraform `>= 1.5` |
+| **Config Mgmt** | Ansible `>= 2.14` |
+| **CI/CD** | Jenkins |
+| **Monitoring** | Prometheus + Grafana + Node Exporter |
+| **Storage** | EFS (Grafana) + EBS gp3 (Prometheus TSDB) |
+| **Network** | VPC + Public/Private Subnets + NAT Gateway + ALB |
+| **Scaling** | Auto Scaling Group (Grafana: 2–4 nodes) |
 
 ---
 
 ## 👤 Owner
-**Sarthak Bhatnagar** | Project: Monitoring Infrastructure
+
+**Sarthak Bhatnagar**
+Project: `onclick-infra` — Monitoring Infrastructure Stack
