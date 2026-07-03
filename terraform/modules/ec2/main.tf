@@ -51,6 +51,7 @@ locals {
     yum makecache
     yum install -y python3
     echo "=== Python 3.9 Install Complete ==="
+    # Force recreate to clear full disk
   USERDATA
 }
 
@@ -114,7 +115,8 @@ resource "aws_instance" "prometheus_primary" {
   vpc_security_group_ids = [var.monitoring_sg_id]
 
   root_block_device {
-    encrypted = true
+    volume_size = 12
+    encrypted   = true
   }
 
   tags = merge(var.tags, {
@@ -155,7 +157,8 @@ resource "aws_instance" "prometheus_replica" {
   vpc_security_group_ids = [var.monitoring_sg_id]
 
   root_block_device {
-    encrypted = true
+    volume_size = 12
+    encrypted   = true
   }
 
   tags = merge(var.tags, {
