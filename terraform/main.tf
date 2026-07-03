@@ -36,6 +36,7 @@ module "security_group" {
   vpc_cidr           = var.vpc_cidr
   allowed_ssh_cidr   = var.allowed_ssh_cidr
   prometheus_port    = var.prometheus_port
+  alertmanager_port  = var.alertmanager_port
   node_exporter_port = var.node_exporter_port
 
   tags = local.common_tags

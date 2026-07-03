@@ -37,6 +37,13 @@
   roles:
     - prometheus
 
+- name: Configure Alertmanager
+  hosts: role_prometheus_primary:role_prometheus_replica
+  become: true
+  gather_facts: true
+  roles:
+    - alertmanager
+
 - name: Configure EFS mounts for Grafana
   hosts: role_grafana
   become: true

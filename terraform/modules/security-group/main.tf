@@ -107,6 +107,16 @@ resource "aws_security_group" "monitoring_sg" {
 
   ingress {
 
+    description = "Alertmanager Access"
+
+    from_port   = var.alertmanager_port
+    to_port     = var.alertmanager_port
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  ingress {
+
     description = "EFS Mount Access"
 
     from_port   = 2049

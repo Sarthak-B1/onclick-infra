@@ -14,6 +14,10 @@ variable "prometheus_port" {
   type = number
 }
 
+variable "alertmanager_port" {
+  type = number
+}
+
 variable "node_exporter_port" {
   type = number
 }

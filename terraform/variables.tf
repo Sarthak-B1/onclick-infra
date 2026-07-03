@@ -113,6 +113,17 @@ variable "prometheus_port" {
   }
 }
 
+variable "alertmanager_port" {
+  description = "Alertmanager HTTP port."
+  type        = number
+  default     = 9093
+
+  validation {
+    condition     = var.alertmanager_port > 0 && var.alertmanager_port < 65536
+    error_message = "Alertmanager port must be between 1 and 65535."
+  }
+}
+
 variable "node_exporter_port" {
   description = "Node Exporter HTTP port."
   type        = number
