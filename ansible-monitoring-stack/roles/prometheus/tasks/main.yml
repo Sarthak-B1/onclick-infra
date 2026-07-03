@@ -60,21 +60,21 @@
 - name: Download Prometheus
   ansible.builtin.get_url:
     url: "{{ prometheus_download_url }}"
-    dest: "/tmp/{{ prometheus_archive }}"
+    dest: "/opt/{{ prometheus_archive }}"
     mode: "0644"
   check_mode: false
 
 - name: Extract Prometheus
   ansible.builtin.unarchive:
-    src: "/tmp/{{ prometheus_archive }}"
-    dest: /tmp
+    src: "/opt/{{ prometheus_archive }}"
+    dest: /opt
     remote_src: true
-    creates: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/prometheus"
+    creates: "/opt/prometheus-{{ prometheus_version }}.linux-amd64/prometheus"
   check_mode: false
 
 - name: Install Prometheus binaries
   ansible.builtin.copy:
-    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
+    src: "/opt/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
     dest: "{{ prometheus_install_dir }}/{{ item }}"
     remote_src: true
     owner: "{{ prometheus_user }}"
@@ -88,7 +88,7 @@
 
 - name: Install Prometheus console assets
   ansible.builtin.copy:
-    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
+    src: "/opt/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
     dest: "{{ prometheus_config_dir }}/{{ item }}"
     remote_src: true
     owner: "{{ prometheus_user }}"

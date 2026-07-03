@@ -28,18 +28,18 @@
 - name: Download Alertmanager
   ansible.builtin.get_url:
     url: "https://github.com/prometheus/alertmanager/releases/download/v0.27.0/alertmanager-0.27.0.linux-amd64.tar.gz"
-    dest: "/tmp/alertmanager-0.27.0.linux-amd64.tar.gz"
+    dest: "/opt/alertmanager-0.27.0.linux-amd64.tar.gz"
     mode: '0644'
 
 - name: Extract Alertmanager
   ansible.builtin.unarchive:
-    src: "/tmp/alertmanager-0.27.0.linux-amd64.tar.gz"
-    dest: "/tmp"
+    src: "/opt/alertmanager-0.27.0.linux-amd64.tar.gz"
+    dest: "/opt"
     remote_src: true
 
 - name: Install Alertmanager binaries
   ansible.builtin.copy:
-    src: "/tmp/alertmanager-0.27.0.linux-amd64/{{ item }}"
+    src: "/opt/alertmanager-0.27.0.linux-amd64/{{ item }}"
     dest: "/usr/local/bin/{{ item }}"
     owner: alertmanager
     group: alertmanager
