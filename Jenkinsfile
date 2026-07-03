@@ -9,6 +9,7 @@ pipeline {
         SSH_KEY_FILE        = credentials('monitoring-ssh-private-key')        
         AWS_ACCESS_KEY_ID   = credentials('aws-access-key-id')      
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key') 
+        SLACK_WEBHOOK_URL   = credentials('slack-webhook-url')
         
         PATH               = "/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${env.PATH}"
     }
@@ -152,6 +153,7 @@ pipeline {
                             -e "ansible_ssh_private_key_file=${SSH_KEY_FILE}" \
                             -e "aws_region=${AWS_REGION}" \
                             -e "grafana_efs_file_system_id=${EFS_ID}" \
+                            -e "slack_webhook_url=${SLACK_WEBHOOK_URL}" \
                             --inventory=inventory/ \
                             --diff
                     '''

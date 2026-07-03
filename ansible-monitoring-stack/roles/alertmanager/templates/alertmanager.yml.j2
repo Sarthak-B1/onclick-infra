@@ -12,8 +12,9 @@ route:
 
 receivers:
   - name: 'web.hook'
-    webhook_configs:
-      - url: 'http://127.0.0.1:5001/' # Dummy webhook URL
+    slack_configs:
+      - api_url: '{{ slack_webhook_url }}'
+        send_resolved: true
 
 inhibit_rules:
   - source_match:
