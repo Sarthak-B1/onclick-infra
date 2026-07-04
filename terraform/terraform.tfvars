@@ -19,6 +19,6 @@ grafana_port       = 3000
 prometheus_port    = 9090
 node_exporter_port = 9100
 
-grafana_min_size         = 2
-grafana_desired_capacity = 2
+grafana_min_size         = 1
+grafana_desired_capacity = 1
 grafana_max_size         = 4
